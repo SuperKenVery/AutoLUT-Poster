@@ -1,0 +1,3 @@
+[submodule "postercise"]
+	path = postercise
+	url = git@github.com:dangh3014/postercise.git

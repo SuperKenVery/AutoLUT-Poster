@@ -1,0 +1,1 @@
+This repo contains a copy of https://github.com/dangh3014/postercise. As I need to modify it, I cannot directly import it. To clean up my file tree, I removed LICENSE of it along with something else. It is MIT licenced.
