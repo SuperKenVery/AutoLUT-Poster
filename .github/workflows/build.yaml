@@ -30,6 +30,9 @@ jobs:
       - uses: cachix/install-nix-action@v30
       - run: nix build -L '.#${{ matrix.attr }}'
 
+      - name: Rename artifact
+        run: mv result result.pdf
       - uses: actions/upload-artifact@v4
         with:
-          path: "./result"
+          name: "${{ matrix.system }}"
+          path: "./result.pdf"
