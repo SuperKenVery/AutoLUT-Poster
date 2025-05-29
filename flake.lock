@@ -12,8 +12,28 @@
         "type": "github"
       },
       "original": {
-        "id": "flake-utils",
-        "type": "indirect"
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "nix-github-actions": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1737420293,
+        "owner": "nix-community",
+        "repo": "nix-github-actions",
+        "rev": "f4158fa080ef4503c8f4c820967d946c2af31ec9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nix-github-actions",
+        "type": "github"
       }
     },
     "nixpkgs": {
@@ -34,7 +54,9 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nix-github-actions": "nix-github-actions",
+        "nixpkgs": "nixpkgs",
+        "typix": "typix"
       }
     },
     "systems": {
@@ -49,6 +71,25 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "typix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1747903649,
+        "owner": "loqusion",
+        "repo": "typix",
+        "rev": "72d9ed52872a7538c7429b72047873dd81c49193",
+        "type": "github"
+      },
+      "original": {
+        "owner": "loqusion",
+        "repo": "typix",
         "type": "github"
       }
     }
