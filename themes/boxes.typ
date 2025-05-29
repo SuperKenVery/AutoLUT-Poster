@@ -49,23 +49,25 @@
 
 #let normal-box(
   color: none,
+  height: auto,
   body
 ) = {
     locate(loc =>
     {
       let primary-color = color-primary.get()
-      show heading: set text(white)
-      show heading: set align(center+horizon)
+      show heading.where(level: 1): set text(white)
+      show heading: set align(center)
       show heading.where(level: 1): set block(
         width: 108.696%,
         height: 1.2em,
+        inset: 8pt,
         fill: primary-color,
       )
-      show heading.where(level: 2): set block(
-        width: 108.696%,
-        height: 1.2em,
-        fill: primary-color.lighten(20%),
-      )
+      // show heading.where(level: 2): set block(
+      //   width: 108.696%,
+      //   height: 1.2em,
+      //   // fill: primary-color.lighten(20%),
+      // )
 
 
       if color != none [
@@ -73,29 +75,23 @@
         #let focus-color = color
         #box(
           width: 100%,
+          height: height,
           stroke: primary-color+.2em,
           fill: focus-color,
-          inset: 0%,
+          (top: 0%, left: 4%, right: 4%, bottom: 4%),
           outset: 0%,
-          [
-            #box(
-              inset: (top: 0%, left: 4%, right: 4%, bottom: 4%),
-              body
-              )
-          ]
+          body
         )
       ] else [
         #let focus-color = color
         #box(
-          stroke: none,//primary-color+.2em,
+          width: 100%,
+          height: height,
+          // stroke: none,//primary-color+.2em,
+          stroke: primary-color + 1mm,
           fill: color,
-          inset: 0%,
-          [
-            #box(
-              inset: (top: 0%, left: 4%, right: 4%, bottom: 4%),
-              body
-              )
-          ]
+          inset: (top: 0%, left: 4%, right: 4%, bottom: 4%),
+          body
         )
       ]
   })
@@ -120,8 +116,7 @@
       let current-subtitle = context subtitle-content.get()
       let current-author = context author-content.get()
       let current-affiliation = context affiliation-content.get()
-      let current-logo-1 = context logo-1-content.get()
-      let current-logo-2 = context logo-2-content.get()
+      let current-right-part = context right-part-content.get()
       let current-footer = context footer-content.get()
 
       // Table captions go above
@@ -138,7 +133,7 @@
 
       grid(
         columns: 1,
-        rows: (7%, 87%, 25mm),
+        rows: (7%, 93%),
 
         // Top = title row
         [
@@ -150,7 +145,7 @@
             inset: 4%,
 
             grid(
-              columns: (75%, 10%, 5%, 10%),
+              columns: (75%, 25%),
               rows: 100%,
               stroke: none,
 
@@ -167,17 +162,9 @@
                   ]
               ],
 
-              // Center
               [
-                #place(horizon+left)[#current-logo-2]
-              ],
-
-              // Extra gap for spacing logos
-              [],
-
-              // Right
-              [
-                #place(horizon+right)[#current-logo-1]
+                #set text(fill: titletext-color)
+                #place(horizon)[#current-right-part]
               ]
             )
           )
@@ -190,22 +177,9 @@
             inset: 20pt,
             fill: bg-color,
 
-            columns(col, gutter: 3pt)[#body]
+            columns(col, gutter: 15pt)[#body]
           )
         ],
-
-        // Bottom = footer
-        [
-          #box(
-            stroke: none,
-            fill: bg-color,
-            height: 100%,
-            width: 100%,
-            inset: 4%,
-
-            align(right)[#current-footer]
-          )
-        ]
       )
 
     })

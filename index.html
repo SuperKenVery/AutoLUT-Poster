@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>PDF Auto-Refresh Viewer</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f0f0f0;
+            }
+
+            #pdf-container {
+                max-width: 100%;
+                text-align: center;
+                background-color: white;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                margin: 0 auto;
+                padding: 20px;
+            }
+
+            canvas {
+                max-width: 100%;
+                border: 1px solid #ddd;
+                margin-bottom: 10px;
+            }
+
+            #controls {
+                margin-bottom: 20px;
+            }
+
+            button {
+                padding: 8px 16px;
+                margin: 0 5px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+
+            button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            #page-info {
+                margin: 0 10px;
+                font-weight: bold;
+            }
+
+            #status {
+                margin-bottom: 10px;
+                padding: 10px;
+                border-radius: 4px;
+            }
+
+            .status-loading {
+                background-color: #fff3cd;
+                color: #856404;
+            }
+
+            .status-loaded {
+                background-color: #d4edda;
+                color: #155724;
+            }
+
+            .status-error {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+
+            .age-display {
+                font-family: monospace;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="pdf-container">
+            <h1>PDF Auto-Refresh Viewer</h1>
+            <div id="status" class="status-loading">Starting...</div>
+
+            <div id="controls">
+                <button id="prev-page">Previous Page</button>
+                <span id="page-info">Page: - / -</span>
+                <button id="next-page">Next Page</button>
+            </div>
+
+            <div id="pdf-viewer">
+                <canvas id="pdf-content-a"></canvas>
+                <canvas id="pdf-content-b" style="display: none"></canvas>
+            </div>
+        </div>
+
+        <script>
+            // Set up PDF.js worker
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+            let pdfDoc = null;
+            let pageNum = 1;
+            let pageRendering = false;
+            let curr_displayed_canvas = "a";
+            let pageNumPending = null;
+            let currentCanvas = null; // Track current canvas for cleanup
+            const scale = 1.5;
+
+            let lastLoadTime = null;
+            let nextLoadTimeout = null;
+            let ageUpdateInterval = null;
+
+            const statusDiv = document.getElementById("status");
+            const pdfViewer = document.getElementById("pdf-viewer");
+            const pageInfo = document.getElementById("page-info");
+            const prevButton = document.getElementById("prev-page");
+            const nextButton = document.getElementById("next-page");
+
+            // Event listeners for navigation
+            prevButton.addEventListener("click", onPrevPage);
+            nextButton.addEventListener("click", onNextPage);
+
+            function cleanupPdfDoc() {
+                if (pdfDoc) {
+                    // Properly destroy the PDF document to free memory
+                    pdfDoc.destroy();
+                    pdfDoc = null;
+                }
+            }
+
+            function updateStatus(message, type = "loading") {
+                statusDiv.innerHTML = message;
+                statusDiv.className = `status-${type}`;
+            }
+
+            function formatAge(milliseconds) {
+                const seconds = milliseconds / 1000;
+                if (seconds < 60) {
+                    return seconds.toFixed(1) + "s";
+                } else {
+                    const minutes = Math.floor(seconds / 60);
+                    const remainingSeconds = (seconds % 60).toFixed(1);
+                    return `${minutes}m ${remainingSeconds}s`;
+                }
+            }
+
+            function updateAgeDisplay() {
+                if (lastLoadTime) {
+                    const age = Date.now() - lastLoadTime;
+                    const ageText = formatAge(age);
+                    updateStatus(
+                        `PDF loaded <span class="age-display">${ageText}</span> ago`,
+                        "loaded",
+                    );
+                }
+            }
+
+            function startAgeUpdater() {
+                // Clear existing interval
+                if (ageUpdateInterval) {
+                    clearInterval(ageUpdateInterval);
+                }
+
+                // Update age display every 100ms for smooth updates
+                ageUpdateInterval = setInterval(updateAgeDisplay, 100);
+            }
+
+            function scheduleNextLoad() {
+                // Clear existing timeout
+                if (nextLoadTimeout) {
+                    clearTimeout(nextLoadTimeout);
+                }
+
+                // Schedule next load 1 second after this load completes
+                nextLoadTimeout = setTimeout(loadPDF, 1000);
+            }
+
+            function getRenderingCanvas() {
+                if (curr_displayed_canvas == "a") {
+                    return document.getElementById("pdf-content-b");
+                } else {
+                    return document.getElementById("pdf-content-a");
+                }
+            }
+
+            function swapCanvas() {
+                const curr = document.getElementById(
+                    "pdf-content-" + curr_displayed_canvas,
+                );
+                const next = getRenderingCanvas();
+
+                next.style["display"] = "";
+                curr.style["display"] = "none";
+                // console.log("Swapped canvas!", curr, next);
+
+                if (curr_displayed_canvas == "a") {
+                    curr_displayed_canvas = "b";
+                } else {
+                    curr_displayed_canvas = "a";
+                }
+            }
+
+            function renderPage(num, oldPdf) {
+                pageRendering = true;
+
+                pdfDoc
+                    .getPage(num)
+                    .then(function (page) {
+                        // Clean up previous canvas
+                        // cleanupCanvas();
+
+                        const canvas = getRenderingCanvas();
+                        const ctx = canvas.getContext("2d");
+                        const viewport = page.getViewport({ scale: scale });
+
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        const renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport,
+                        };
+
+                        const renderTask = page.render(renderContext);
+
+                        renderTask.promise
+                            .then(function () {
+                                pageRendering = false;
+                                swapCanvas();
+                                oldPdf.destroy();
+
+                                // Clear previous content and add new canvas
+                                currentCanvas = canvas;
+
+                                updatePageInfo();
+
+                                if (pageNumPending !== null) {
+                                    renderPage(pageNumPending);
+                                    pageNumPending = null;
+                                }
+                            })
+                            .catch(function (error) {
+                                pageRendering = false;
+                                oldPdf.destroy();
+                                updateStatus(
+                                    "Error rendering page: " + error.message,
+                                    "error",
+                                );
+                            });
+                    })
+                    .catch(function (error) {
+                        pageRendering = false;
+                        updateStatus(
+                            "Error getting page: " + error.message,
+                            "error",
+                        );
+                    });
+            }
+
+            function queueRenderPage(num) {
+                if (pageRendering) {
+                    pageNumPending = num;
+                } else {
+                    renderPage(num);
+                }
+            }
+
+            function onPrevPage() {
+                if (pageNum <= 1) {
+                    return;
+                }
+                pageNum--;
+                queueRenderPage(pageNum);
+            }
+
+            function onNextPage() {
+                if (pageNum >= pdfDoc.numPages) {
+                    return;
+                }
+                pageNum++;
+                queueRenderPage(pageNum);
+            }
+
+            function updatePageInfo() {
+                if (pdfDoc) {
+                    pageInfo.textContent = `Page: ${pageNum} / ${pdfDoc.numPages}`;
+                    prevButton.disabled = pageNum <= 1;
+                    nextButton.disabled = pageNum >= pdfDoc.numPages;
+                } else {
+                    pageInfo.textContent = "Page: - / -";
+                    prevButton.disabled = true;
+                    nextButton.disabled = true;
+                }
+            }
+
+            function loadPDF() {
+                // updateStatus("Loading PDF...", "loading");
+
+                // Add timestamp to prevent caching
+                const timestamp = new Date().getTime();
+                const pdfUrl = `./main.pdf?t=${timestamp}`;
+
+                pdfjsLib
+                    .getDocument(pdfUrl)
+                    .promise.then(function (pdf) {
+                        // Clean up previous PDF document before assigning new one
+                        // cleanupPdfDoc();
+                        const oldPdf = pdf;
+
+                        pdfDoc = pdf;
+
+                        // If current page is greater than total pages, reset to page 1
+                        if (pageNum > pdfDoc.numPages) {
+                            pageNum = 1;
+                        }
+
+                        // Record the load time
+                        lastLoadTime = Date.now();
+
+                        // Start updating the age display
+                        startAgeUpdater();
+
+                        // Render the page
+                        renderPage(pageNum, oldPdf);
+
+                        // Schedule the next load
+                        scheduleNextLoad();
+                    })
+                    .catch(function (error) {
+                        updateStatus(
+                            "Error loading PDF: " + error.message,
+                            "error",
+                        );
+                        pdfViewer.innerHTML =
+                            "<p>Failed to load PDF. Please check if the file exists.</p>";
+                        updatePageInfo();
+
+                        // Still schedule next load even on error
+                        scheduleNextLoad();
+                    });
+            }
+
+            // Cleanup on page unload
+            window.addEventListener("beforeunload", function () {
+                cleanupCanvas();
+                cleanupPdfDoc();
+                if (ageUpdateInterval) {
+                    clearInterval(ageUpdateInterval);
+                }
+                if (nextLoadTimeout) {
+                    clearTimeout(nextLoadTimeout);
+                }
+            });
+
+            // Start the loading cycle
+            loadPDF();
+        </script>
+    </body>
+</html>

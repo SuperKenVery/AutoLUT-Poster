@@ -5,21 +5,44 @@
 
 #set page(width: 84in * 0.6, height: 42in * 0.6)
 #set text(size: 24pt)
-#show: theme
-
-
+#show: theme.with(
+  primary-color: rgb("#501451")
+)
 
 #poster-content()[
   #poster-header(
     title: [AutoLUT: LUT-Based Image Super-Resolution with Automatic Sampling and Adaptive Residual Learning],
     authors: [Yuheng Xu\*, Shijie Yang\*, Xin Liu, Jie Liu, Jie Tang, Gangshan Wu (\* equal contribution)],
     // affiliation: [NanJing University],
-    logo-1: image("figures/cvpr-navbar-logo.svg"),
-    logo-2: image("figures/nju_logo.png"),
+    right-part: stack(
+      dir: ltr,
+      spacing: 1fr,
 
+      image("figures/nju_logo.png"),
+      image("figures/cvpr-navbar-logo.svg"),
+      align(
+        center,
+        stack(
+          dir: ttb,
+          spacing: 1mm,
+          qr-code("https://arxiv.org/abs/2503.01565", width: 20mm),
+          [arXiv]
+        )
+      )
+      ,
+      align(
+        center,
+        stack(
+          dir: ttb,
+          spacing: 1mm,
+          qr-code("https://github.com/SuperKenVery/AutoLUT", width: 20mm),
+          [GitHub]
+        )
+      )
+    )
   )
 
-  #normal-box[
+  #normal-box(height: 49%)[
     = Challenges
     DNN based image super-resolution are effective at restoring details, but are slow to run. Therefore,
     previous works propose to export DNNs to lookup tables.
@@ -37,13 +60,13 @@
         *Right*: MuLUT using multiple LUTs to expand RF
       ],
     )
-    However, the storage size requirement grows exponentially: $N = 256^("Number of input pixels")$
+    However, the storage size requirement grows exponentially: $ N = 256^("Number of input pixels") $
 
     Previous work MuLUT enlarged reception field with linear size, by using multiple lookup tables.
     But it relies on manual design of sampling patterns, and didn't incorporate any residual connections.
   ]
 
-  #normal-box[
+  #normal-box(height: 49.2%)[
     = Overview of AutoLUT pipeline
     #figure(
       muchpdf(read("figures/overview.pdf", encoding: none), width: 90%),
@@ -56,7 +79,7 @@
       sample 4 pixels out of sample area and AdaRL layer to use information from previous AutoLUT group.
   ]
 
-  #normal-box[
+  #normal-box(height: 100%)[
     = Methods
     == AutoSample
     #figure(
@@ -70,6 +93,8 @@
     $ Y_n^((c)) = sum_(i=1)^k sum_(j=1)^k X_n^((i,j)) dot W^((i,j,1,c)) $
     where $k$ is the configured sample size, and $W$ is the learned weight.
 
+    #v(50pt)
+
     == AdaRL
     #figure(
       image("figures/adarl.svg", width: 80%),
@@ -82,7 +107,7 @@
     $ R_(n-1)^((i,j)) = (1 - W_("Residual")^((i,j))) dot.circle P_(n-1)^((i,j)) + W_("Residual")^((i,j)) dot.circle P_(n-2)^((i,j)) $
   ]
 
-  #normal-box[
+  #normal-box(height: 100%)[
     = Experiments
 
     #figure(
@@ -182,21 +207,7 @@
     #stack(
       dir: ltr,
       spacing: 10mm,
-      stack(
-        dir: ttb,
-        spacing: 1mm,
-        qr-code("https://arxiv.org/abs/2503.01565", width: 20mm),
-        [arXiv]
-      ),
-      align(
-        center,
-        stack(
-          dir: ttb,
-          spacing: 1mm,
-          qr-code("https://github.com/SuperKenVery/AutoLUT", width: 20mm),
-          [GitHub]
-        )
-      )
+
 
     )
   ]

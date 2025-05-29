@@ -10,15 +10,14 @@
 #let subtitle-content = state("subtitle-body")
 #let author-content = state("author-body")
 #let affiliation-content = state("affiliation-body")
-#let logo-1-content = state("logo-1-body")
-#let logo-2-content = state("logo-2-body")
+#let right-part-content = state("right-part-body")
 
 
 #let focus-content = state("focus-body")
 #let footer-content = state("footer-body")
 
 
-#let theme(   
+#let theme(
   primary-color: rgb(28,55,103), // Dark blue
   background-color: white,
   accent-color: rgb(243,163,30), // Yellow
@@ -35,8 +34,8 @@
   color-accent.update(accent-color)
   color-titletext.update(color-titletext => titletext-color)
   size-titletext.update(size-titletext => titletext-size)
- 
-  body  
+
+  body
 }
 
 
@@ -45,17 +44,13 @@
   subtitle: none,
   authors: none,
   affiliation: none,
-  logo-1: none,
-  logo-2: none,
-  // text-color: none,
-  // body
+  right-part: none
 ) = {
   title-content.update(title-body => title)
   subtitle-content.update(subtitle-body => subtitle)
   author-content.update(author-body => authors)
   affiliation-content.update(affiliation-body => affiliation)
-  logo-1-content.update(logo-1-body => logo-1)
-  logo-2-content.update(logo-2-body => logo-2)
+  right-part-content.update(right-part-body => right-part)
 }
 
 
@@ -65,4 +60,3 @@
 ) = {
   footer-content.update(footer-body => body)
 }
-
