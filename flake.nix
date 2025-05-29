@@ -111,8 +111,6 @@
 
       packages.default = build-drv;
 
-      packages.githubActions = nix-github-actions.lib.mkGithubMatrix { checks = self.packages; };
-
       apps = rec {
         default = watch;
         build = flake-utils.lib.mkApp {
@@ -135,5 +133,7 @@
         ];
       };
 
-    });
+    }) // {
+      githubActions = nix-github-actions.lib.mkGithubMatrix { checks = self.packages; };
+    };
 }
