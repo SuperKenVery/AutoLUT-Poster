@@ -2,6 +2,7 @@
 #import "@preview/cades:0.3.0": qr-code
 #import "postercise.typ": *
 #import themes.boxes: *
+#import "@preview/wrap-it:0.1.1": wrap-content
 
 #set page(width: 84in * 0.6, height: 42in * 0.6)
 #set text(size: 24pt)
@@ -83,7 +84,7 @@
     = Methods
     == AutoSample
     #figure(
-      muchpdf(read("figures/autosample.pdf", encoding: none), width: 80%),
+      muchpdf(read("figures/autosample.pdf", encoding: none)),
       caption: [The AutoSample Layer]
     )
     We propose AutoSample layer which samples 4 pixels out of a configurable range of pixels
@@ -93,18 +94,18 @@
     $ Y_n^((c)) = sum_(i=1)^k sum_(j=1)^k X_n^((i,j)) dot W^((i,j,1,c)) $
     where $k$ is the configured sample size, and $W$ is the learned weight.
 
-    #v(50pt)
+    #v(30pt)
 
     == AdaRL
     #figure(
-      image("figures/adarl.svg", width: 80%),
+      image("figures/adarl.svg"),
       caption: [The Adaptive Residual Learning Layer]
     )
     Directly adding previous input would push the color range from $[0,255]$ to $[0,510]$, which
     results in an unacceptable LUT size. Therfore, for each of the four pixels we do a weighed
     average of the previous and the current input. The weights are learned by the network, and
-    the weights sum to $1$ which ensures that the result still lies in the range $[0,255]$. Formally,
-    $ R_(n-1)^((i,j)) = (1 - W_("Residual")^((i,j))) dot.circle P_(n-1)^((i,j)) + W_("Residual")^((i,j)) dot.circle P_(n-2)^((i,j)) $
+    the weights sum to $1$ which ensures that the result still lies in the range $[0,255]$.
+    // Formally, $ R_(n-1)^((i,j)) = (1 - W_("Residual")^((i,j))) dot.circle P_(n-1)^((i,j)) + W_("Residual")^((i,j)) dot.circle P_(n-2)^((i,j)) $
   ]
 
   #normal-box(height: 100%)[
@@ -126,9 +127,7 @@
 
     On the left, our methods are denoted with yellow dots. Applying our methods on MuLUT, we get
     larger RF and better performance while maintaining similar storage size. Applying on SPF-LUT,
-    we achieve similar performance while reducing storage size.
-
-    On the right, our methods are highlighted in red. Our method can reduce storage size, increase
+    we achieve similar performance while reducing storage size. On the right, our methods are highlighted in red. Our method can reduce storage size, increase
     performance, or do both.
 
     #show table.cell.where(y: 0): strong
@@ -181,7 +180,7 @@
         [RCAN], [59.74MB], [32.61/0.8999], [28.93/0.7894], [27.80/0.7436], [26.85/0.8089], [31.45/0.9187],
         [SwinIR], [170.4MB], [32.44/0.8976], [28.77/0.7858], [27.69/0.7406], [26.47/0.7980], [30.92/0.9151],
       ),
-      caption: [Applying our methods vs not applying them]
+      caption: [*Table 1.* Applying our methods vs not applying them]
     )
 
     #figure(
@@ -196,8 +195,30 @@
         numbering("①", 3), [-], [$checkmark$], [30.70/0.8687], [27.67/0.7572], [26.89/0.7136], [24.51/0.7242], [28.07/0.8685],
         numbering("①", 4), [$checkmark$], [$checkmark$], [30.79/0.8693], [27.72/0.7579], [26.94/0.7142], [24.57/0.7249], [28.20/0.8696],
       ),
-      caption: [Ablation studies on AutoSample and AdaRL]
+      caption: [*Table 2.* Ablation studies on AutoSample and AdaRL]
     )
+
+    #let runtime-comparison = figure(
+      table(
+        columns: 3,
+        [Model], [Runtime (ms)], [PSNR],
+
+        [MuLUT], [5938.1], [30.60],
+        [MuLUT+Ours 1×5], [2043.95], [30.62],
+        [MuLUT+Ours], [5984.00], [30.85],
+        [SPF-LUT+DFC], [31921.65], [31.05],
+        [SPF-Light (Ours)], [9910.95], [31.02],
+      ),
+      caption: [*Table 3.* Runtime comparison]
+    )
+
+    #wrap-content(runtime-comparison, [
+      In *Table 1* we compare performance with or without our methods. Our methods are highlighted in grey.
+      In *Table 2* we do ablation studies on AutoSample and AdaRL modules. It shows that both AdaRL and AutoSample
+      are effective at improving the SR performance on their own, and is even better when combined.
+      In *Table 3* we compare the run time with or without our methods. On MuLUT, our method can improve performance
+      or reduce run time. On SPF-LUT, our method can greatly reduce run time.
+    ])
 
   ]
 
