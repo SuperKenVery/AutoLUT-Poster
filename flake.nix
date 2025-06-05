@@ -48,6 +48,8 @@
 
       commonArgs = {
         typstSource = "src/main.typ";
+        typstOutput = "build/output.pdf";
+        typstOpts = {};
 
         fontPaths = [
           # Add paths to fonts here
