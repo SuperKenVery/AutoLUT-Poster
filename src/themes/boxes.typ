@@ -145,7 +145,7 @@
             inset: 4%,
 
             grid(
-              columns: (75%, 25%),
+              columns: (70%, 30%),
               rows: 100%,
               stroke: none,
 

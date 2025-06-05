@@ -37,17 +37,17 @@
 
       typixLib = typix.lib.${system};
 
-      typstSrc = typixLib.cleanTypstSource ./.;
+      typstSrc = typixLib.cleanTypstSource ./src/.;
       src = lib.fileset.toSource {
-        root = ./.;
+        root = ./src/.;
         fileset = lib.fileset.unions [
           (lib.fileset.fromSource typstSrc)
-          ./figures
+          ./src/figures
         ];
       };
 
       commonArgs = {
-        typstSource = "src/main.typ";
+        typstSource = "main.typ";
         typstOutput = "build/output.pdf";
         typstOpts = {};
 

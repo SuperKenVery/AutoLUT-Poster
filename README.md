@@ -9,6 +9,12 @@ We use nix to manage the environment.
 ```sh
 # watch
 nix run .#watch # output at build/output.pdf
+
+# Build
+nix build . # output at ./result
 ```
 
-> [!NOTE] > `nix run .#build` does not work for some yet unknown reason.
+## Files
+
+- `src/main.typ` Poster for CVPR25
+- `src/poster-valser.typ` Poster for VALSER 2025
