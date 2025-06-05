@@ -1,3 +1,3 @@
 .direnv/
-/build/*.pdf
-/build/*.png
+/build/*
+.DS_Store

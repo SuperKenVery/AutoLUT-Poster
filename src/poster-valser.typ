@@ -5,10 +5,12 @@
 #import "@preview/wrap-it:0.1.1": wrap-content
 #import "body-content.typ": body-content
 
-#set page(width: 84in * 0.6, height: 42in * 0.6)
-#set text(size: 24pt)
+// #set page(width: 84in * 0.6, height: 42in * 0.6)
+#set page(width: 190cm * 0.7, height: 115cm * 0.7)
+#set text(size: 31pt)
 #show: theme.with(
-  primary-color: rgb("#63CCFA")
+  primary-color: rgb("#63CCFA"),
+  titletext-size: 1.6em,
 )
 
 #poster-content()[

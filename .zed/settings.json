@@ -1,0 +1,13 @@
+// Folder-specific settings
+//
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
+{
+  "lsp": {
+    "tinymist": {
+      "settings": {
+        "rootPath": "/Users/ken/Documents/大学/大二上/科研实践/conferences/cvpr-poster/src"
+      }
+    }
+  }
+}
