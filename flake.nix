@@ -47,7 +47,7 @@
       };
 
       commonArgs = {
-        typstSource = "main.typ";
+        typstSource = "src/main.typ";
 
         fontPaths = [
           # Add paths to fonts here
